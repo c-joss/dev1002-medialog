@@ -66,6 +66,39 @@ def create_app():
             "category_id": new_item.category_id,
             "image_url": new_item.image_url,
         }, 201
+    
+    @app.get("/items")
+    def list_items():
+
+        items = Item.query.all()
+
+        results = []
+        for item in items:
+            results.append({
+                "id": item.id,
+                "title": item.title,
+                "user_id": item.user_id,
+                "category_id": item.category_id,
+                "image_url": item.image_url,
+            })
+
+        return jsonify(results), 200
+    
+    @app.get("/items/<int:item_id>")
+    def get_item(item_id):
+
+        item = Item.query.get(item_id)
+
+        if not item:
+            return {"errors": [f"Item with id {item_id} not found"]}, 404
+        
+        return {
+            "id": item.id,
+            "title": item.title,
+            "user_id": item.user_id,
+            "category_id": item.category_id,
+            "image_url": item.image_url,
+        }, 200
 
 
     return app
