@@ -136,6 +136,19 @@ def create_app():
             "category_id": item.category_id,
             "image_url": item.image_url,
         }, 200
+    
+    @app.delete("/items/<int:item_id>")
+    def delete_item(item_id):
+
+        item = Item.query.get(item_id)
+
+        if not item:
+            return {"errors": [f"Item with id {item_id} not found"]}, 404
+        
+        db.session.delete(item)
+        db.session.commit()
+
+        return {"message": f"Item {item_id} deleted successfully"}, 200
 
 
 
