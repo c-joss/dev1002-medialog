@@ -41,6 +41,12 @@ class Item(db.Model):
         back_populates="items"
     )
 
+    creators = db.relationship(
+        "Creator",
+        secondary="item_creators",
+        back_populates="items",
+    )
+
     def __repr__(self):
         return f"<Item {self.title}>"
     
@@ -68,4 +74,30 @@ class ItemTag(db.Model):
 
     __table_args__ = (
         db.UniqueConstraint("item_id", "tag_id", name="uix_item_tag"),
+    )
+
+class Creator(db.Model):
+    __tablename__ = "creators"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+
+    items = db.relationship(
+        "Item",
+        secondary="item_creators",
+        back_populates="creators",
+    )
+
+    def __repr__(self):
+        return f"<Creator {self.name}>"
+    
+class ItemCreator(db.Model):
+    __tablename__ = "item_creators"
+
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey("items.id"), nullable=False)
+    creator_id = db.Column(db.Integer, db.ForeignKey("creators.id"), nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint("item_id", "creator_id", name="uix_item_creator"),
     )
