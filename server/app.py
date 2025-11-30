@@ -28,6 +28,17 @@ def user_to_dict(user):
         "email": user.email,
     }
 
+def item_to_dict(item):
+    return {
+        "id": item.id,
+        "title": item.title,
+        "user_id": item.user_id,
+        "category_id": item.category_id,
+        "image_url": item.image_url,
+        "tags": [t.name for t in item.tags],
+        "creators": [c.name for c in item.creators],
+    }
+
 def create_app():
 
     app = Flask(__name__)
@@ -152,15 +163,7 @@ def create_app():
         db.session.add(new_item)
         db.session.commit()
 
-        return {
-            "id": new_item.id,
-            "title": new_item.title,
-            "user_id": new_item.user_id,
-            "category_id": new_item.category_id,
-            "image_url": new_item.image_url,
-            "tags": [t.name for t in new_item.tags],
-            "creators": [c.name for c in new_item.creators],
-        }, 201
+        return item_to_dict(new_item), 201
     
     
     @app.get("/items")
@@ -168,19 +171,7 @@ def create_app():
 
         items = Item.query.all()
 
-        results = []
-        for item in items:
-            results.append({
-                "id": item.id,
-                "title": item.title,
-                "user_id": item.user_id,
-                "category_id": item.category_id,
-                "image_url": item.image_url,
-                "tags": [t.name for t in item.tags],
-                "creators": [c.name for c in item.creators],
-            })
-
-        return jsonify(results), 200
+        return jsonify([item_to_dict(item) for item in items]), 200
     
     
     @app.get("/items/<int:item_id>")
@@ -191,15 +182,7 @@ def create_app():
         if not item:
             return {"errors": [f"Item with id {item_id} not found"]}, 404
         
-        return {
-            "id": item.id,
-            "title": item.title,
-            "user_id": item.user_id,
-            "category_id": item.category_id,
-            "image_url": item.image_url,
-            "tags": [t.name for t in item.tags],
-            "creators": [c.name for c in item.creators],
-        }, 200
+        return item_to_dict(item), 200
     
     
     @app.patch("/items/<int:item_id>")
@@ -231,15 +214,7 @@ def create_app():
 
         db.session.commit()
 
-        return {
-            "id": item.id,
-            "title": item.title,
-            "user_id": item.user_id,
-            "category_id": item.category_id,
-            "image_url": item.image_url,
-            "tags": [t.name for t in item.tags],
-            "creators": [c.name for c in item.creators],
-        }, 200
+        return item_to_dict(item), 200
     
     
     @app.delete("/items/<int:item_id>")
@@ -371,15 +346,7 @@ def create_app():
         item.tags = tags
         db.session.commit()
 
-        return {
-            "id": item.id,
-            "title": item.title,
-            "user_id": item.user_id,
-            "category_id": item.category_id,
-            "image_url": item.image_url,
-            "tags": [t.name for t in item.tags],
-            "creators": [c.name for c in item.creators],
-        }, 200
+        return item_to_dict(item), 200
     
     
     @app.get("/creators")
@@ -438,15 +405,7 @@ def create_app():
         item.creators = creators
         db.session.commit()
 
-        return {
-            "id": item.id,
-            "title": item.title,
-            "user_id": item.user_id,
-            "category_id": item.category_id,
-            "image_url": item.image_url,
-            "tags": [t.name for t in item.tags],
-            "creators": [c.name for c in item.creators],
-        }, 200
+        return item_to_dict(item), 200
  
     return app
 
