@@ -123,13 +123,16 @@ def create_app():
     @app.post("/items")
     def create_item():
 
-        data = request.get_json()
+        data = request.get_json() or {}
 
         required_fields = ["title", "user_id", "category_id"]
         missing = [field for field in required_fields if field not in data]
 
         if missing:
             return {"errors": [f"Missing field: {m}" for m in missing]}, 400
+        
+        if not data.get("title"):
+            return {"errors": ["Title is required"]}, 400
         
         user = User.query.get(data["user_id"])
         category = Category.query.get(data["category_id"])
