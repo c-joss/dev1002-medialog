@@ -121,10 +121,31 @@ def create_app():
         if error:
             return error()
 
-        required = ["username", "first_name", "last_name", "email", "password"]
-        missing = [field for field in required if field not in data or not data[field]]
-        if missing:
-            return {"errors": [f"Missing or empty field: {m}" for m in missing]}, 400
+        error = require_fields(
+            data,
+            ["username", "first_name", "last_name", "email", "password"],
+        )
+        if error:
+            return error
+
+        username = data["username"].strip()
+        email = data["email"].strip()
+
+        existing_username = User.query.filter_by(username=username).first()
+        if existing_username:
+            return {"errors": ["Username already taken"]}, 400
+
+        existing_email = User.query.filter_by(email=email).first()
+        if existing_email:
+            return {"errors": ["Email already in use"]}, 400
+
+        user = User(
+            username=username,
+            first_name=data["first_name"].strip(),
+            last_name=data["last_name"].strip(),
+            email=email,
+            password=data["password"],
+        )
         
         existing_username = User.query.filter_by(username=data["username"]).first()
         if existing_username:
@@ -165,21 +186,19 @@ def create_app():
 
     @app.post("/login")
     def login():
-        data = request.get_json() or {}
+        data, error = get_json_or_error()
+        if error:
+            return error
 
-        required = ["email", "password"]
-        missing = [field for field in required if field not in data]
-        if missing:
-            return {"errors": [f"Missing field: {m}" for m in missing]}, 400
+        error = require_fields(data, ["email", "password"])
+        if error:
+            return error
 
-        email = data.get("email")
-        password = data.get("password")
+        email = data["email"].strip()
+        password = data["password"]
 
         user = User.query.filter_by(email=email).first()
-        if not user:
-            return {"errors": ["Invalid email or password"]}, 401
-
-        if user.password != password:
+        if not user or user.password != password:
             return {"errors": ["Invalid email or password"]}, 401
 
         return {
