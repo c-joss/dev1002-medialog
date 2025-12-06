@@ -7,8 +7,44 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from flask import request, jsonify
 from .models import db, User, Category, Item, Tag, Creator, Review
+from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.exceptions import BadRequest
 
 load_dotenv()
+
+def get_json_or_error():
+    try:
+        data = request.get_json() or {}
+    except BadRequest:
+        return None, ({"errors": ["Invalid JSON body"]}, 400)
+
+    if not isinstance(data, dict):
+        return None, ({"errors": ["JSON body must be an object"]}, 400)
+
+    return data, None
+
+
+def require_fields(data, required_fields):
+    missing = []
+    for field in required_fields:
+        value = data.get(field)
+        if value is None:
+            missing.append(field)
+        elif isinstance(value, str) and not value.strip():
+            missing.append(field)
+
+    if missing:
+        return (
+            {
+                "errors": [
+                    f"Missing or empty field: {name}"
+                    for name in missing
+                ]
+            },
+            400,
+        )
+
+    return None
 
 def review_to_dict(review):
     return {
