@@ -128,7 +128,7 @@ def create_app():
     def create_user():
         data, error = get_json_or_error()
         if error:
-            return error()
+            return error
 
         error = require_fields(
             data,
@@ -156,24 +156,8 @@ def create_app():
             password=data["password"],
         )
         
-        existing_username = User.query.filter_by(username=data["username"]).first()
-        if existing_username:
-            return {"errors": ["Username already taken"]}, 400
-
-        existing_email = User.query.filter_by(email=data["email"]).first()
-        if existing_email:
-            return {"errors": ["Email already in use"]}, 400
-
-        user = User(
-            username=data["username"],
-            first_name=data["first_name"],
-            last_name=data["last_name"],
-            email=data["email"],
-            password=data["password"],
-        )
-
         db.session.add(user)
-        db.session.commit()
+        error = commit_session()
         if error:
             return error
 
@@ -324,7 +308,9 @@ def create_app():
         if "image_url" in data:
             item.image_url = data["image_url"]
 
-        db.session.commit()
+        error = commit_session()
+        if error:
+            return error
 
         return item_to_dict(item), 200
     
@@ -338,7 +324,9 @@ def create_app():
             return {"errors": [f"Item with id {item_id} not found"]}, 404
         
         db.session.delete(item)
-        db.session.commit()
+        error = commit_session()
+        if error:
+            return error
 
         return {"message": f"Item {item_id} deleted successfully"}, 200
     
@@ -383,7 +371,7 @@ def create_app():
         )
 
         db.session.add(review)
-        db.session.commit()
+        error = commit_session()
         if error:
             return error
 
@@ -425,20 +413,24 @@ def create_app():
     
     @app.post("/tags")
     def create_tag():
+        data, error = get_json_or_error()
+        if error:
+            return error
+        
+        error = require_fields(data, ["name"])
+        if error:
+            return error
 
-        data = request.get_json() or {}
-
-        name = data.get("name")
-        if not name:
-            return {"errors": ["Tag name is required"]}, 400
-    
+        name = data["name"].strip()
         existing = Tag.query.filter_by(name=name).first()
         if existing:
             return {"errors": ["Tag with this name already exists"]}, 400
     
         tag = Tag(name=name)
         db.session.add(tag)
-        db.session.commit()
+        error = commit_session()
+        if error:
+            return error
 
         return {"id": tag.id, "name": tag.name}, 201
     
@@ -450,7 +442,10 @@ def create_app():
         if not item:
             return {"errors": [f"Item with id {item_id} not found"]},404
         
-        data = request.get_json() or {}
+        data, error = get_json_or_error()
+        if error:
+            return error
+
         tag_ids = data.get("tag_ids")
 
         if not isinstance(tag_ids, list) or not tag_ids:
@@ -462,7 +457,9 @@ def create_app():
             return {"errors": ["One or more tag_ids do not exist"]}, 400
         
         item.tags = tags
-        db.session.commit()
+        error = commit_session()
+        if error:
+            return error
 
         return item_to_dict(item), 200
     
@@ -485,19 +482,24 @@ def create_app():
     @app.post("/creators")
     def create_creator():
 
-        data = request.get_json() or {}
-
-        name = data.get("name")
-        if not name:
-            return {"errors": ["Creator name is required"]}, 400
+        data, error = get_json_or_error()
+        if error:
+            return error
         
+        error = require_fields(data, ["name"])
+        if error:
+            return error
+
+        name = data["name"].strip()
         existing = Creator.query.filter_by(name=name).first()
         if existing:
             return {"errors": ["Creator with this name already exists"]}, 400
         
         creator = Creator(name=name)
         db.session.add(creator)
-        db.session.commit()
+        error = commit_session()
+        if error:
+            return error
 
         return {"id": creator.id, "name": creator.name}, 201
     
@@ -509,7 +511,10 @@ def create_app():
         if not item:
             return {"errors": [f"Item with id {item_id} not found"]}, 404
         
-        data = request.get_json() or {}
+        data, error = get_json_or_error()
+        if error:
+            return error
+        
         creator_ids = data.get("creator_ids")
 
         if not isinstance(creator_ids, list) or not creator_ids:
@@ -521,7 +526,9 @@ def create_app():
             return {"errors": ["One or more creator_ids do not exist"]}, 400
         
         item.creators = creators
-        db.session.commit()
+        error = commit_session()
+        if error:
+            return error
 
         return item_to_dict(item), 200
     
