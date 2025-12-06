@@ -524,6 +524,14 @@ def create_app():
         db.session.commit()
 
         return item_to_dict(item), 200
+    
+    @app.errorhandler(404)
+    def handle_not_found(error):
+        return {"errors": ["Endpoint not found"]}, 404
+
+    @app.errorhandler(500)
+    def handle_server_error(error):
+        return {"errors": ["Internal server error"]}, 500
  
     return app
 
