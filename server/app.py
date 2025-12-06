@@ -291,9 +291,10 @@ def create_app():
             return {"errors": ["No data provided to update"]}, 400
         
         if "title" in data:
-            if not data["title"]:
+            title = (data["title"] or "").strip()
+            if not title:
                 return {"errors": ["Title cannot be empty"]}, 400
-            item.title = data["title"]
+            item.title = title
 
         if "category_id" in data:
             category_id, error = require_positive_int("category_id", data["category_id"])
