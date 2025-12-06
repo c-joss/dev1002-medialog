@@ -324,6 +324,12 @@ def create_app():
         if not item:
             return {"errors": [f"Item with id {item_id} not found"]}, 404
         
+        for review in list(item.reviews):
+            db.session.delete(review)
+
+        item.tags.clear()
+        item.creators.clear()
+        
         db.session.delete(item)
         error = commit_session()
         if error:
