@@ -46,6 +46,32 @@ def require_fields(data, required_fields):
 
     return None
 
+def require_positive_int(name, raw_value):
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError):
+        return None, ({"errors": [f"{name} must be an integer"]}, 400)
+
+    if value <= 0:
+        return None, ({"errors": [f"{name} must be a positive integer"]}, 400)
+
+    return value, None
+
+
+def parse_optional_rating(raw_rating):
+    if raw_rating is None:
+        return None, None
+
+    try:
+        rating_value = int(raw_rating)
+    except (TypeError, ValueError):
+        return None, ({"errors": ["Rating must be an integer between 1 and 5"]}, 400)
+
+    if rating_value < 1 or rating_value > 5:
+        return None, ({"errors": ["Rating must be between 1 and 5"]}, 400)
+
+    return rating_value, None
+
 def review_to_dict(review):
     return {
         "id": review.id,
@@ -91,7 +117,9 @@ def create_app():
     
     @app.post("/users")
     def create_user():
-        data = request.get_json() or {}
+        data, error = get_json_or_error()
+        if error:
+            return error()
 
         required = ["username", "first_name", "last_name", "email", "password"]
         missing = [field for field in required if field not in data or not data[field]]
