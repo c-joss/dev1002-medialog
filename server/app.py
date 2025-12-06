@@ -239,8 +239,20 @@ def create_app():
         if not data.get("title"):
             return {"errors": ["Title is required"]}, 400
         
-        user = User.query.get(data["user_id"])
-        category = Category.query.get(data["category_id"])
+        title = data["title"].strip()
+        if not title:
+            return {"errors": ["Title is required"]}, 400
+
+        user_id, error = require_positive_int("user_id", data["user_id"])
+        if error:
+            return error
+
+        category_id, error = require_positive_int("category_id", data["category_id"])
+        if error:
+            return error
+        
+        user = User.query.get(user_id)
+        category = Category.query.get(category_id)
 
         if not user:
             return {"errors": ["User does not exist"]}, 400
@@ -248,9 +260,9 @@ def create_app():
             return {"errors": ["Category does not exist"]}, 400
         
         new_item = Item(
-            title=data["title"],
-            user_id=data["user_id"],
-            category_id=data["category_id"],
+            title=title,
+            user_id=user.id,
+            category_id=category.id,
             image_url=data.get("image_url"),
         )
 
@@ -300,10 +312,14 @@ def create_app():
             item.title = data["title"]
 
         if "category_id" in data:
-            category = Category.query.get(data["category_id"])
+            category_id, error = require_positive_int("category_id", data["category_id"])
+            if error:
+                return error
+            
+            category = Category.query.get(category_id)
             if not category:
                 return {"errors": ["Category does not exist"]}, 400
-            item.category_id = data["category_id"]
+            item.category_id = category_id
 
         if "image_url" in data:
             item.image_url = data["image_url"]
