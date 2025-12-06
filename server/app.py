@@ -46,6 +46,15 @@ def require_fields(data, required_fields):
 
     return None
 
+def commit_session():
+    try:
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        return ({"errors": ["Unexpected server error while saving data"]}, 500)
+
+    return None
+
 def require_positive_int(name, raw_value):
     try:
         value = int(raw_value)
@@ -165,6 +174,8 @@ def create_app():
 
         db.session.add(user)
         db.session.commit()
+        if error:
+            return error
 
         return user_to_dict(user), 201
     
@@ -244,7 +255,9 @@ def create_app():
         )
 
         db.session.add(new_item)
-        db.session.commit()
+        error = commit_session()
+        if error:
+            return error
 
         return item_to_dict(new_item), 201
     
