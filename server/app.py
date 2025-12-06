@@ -346,28 +346,32 @@ def create_app():
     @app.post("/reviews")
     def create_review():
 
-        data = request.get_json() or {}
+        data, error = get_json_or_error()
+        if error:
+            return error
         
         required = ["user_id", "item_id"]
         missing = [field for field in required if field not in data]
         if missing:
-            return {"errors": [f"Missing field: {m}" for m in missing]}, 400        
-        
-        rating_value = None
-        if "rating" in data and data["rating"] is not None:
-            try:
-                rating_value = int(data["rating"])
-            except (TypeError, ValueError):
-                return {"errors": ["Rating must be an integer between 1 and 5"]}, 400
+            return {"errors": [f"Missing field: {m}" for m in missing]}, 400
 
-            if rating_value < 1 or rating_value > 5:
-                return {"errors": ["Rating must be between 1 and 5"]}, 400
+        user_id, error = require_positive_int("user_id", data["user_id"])
+        if error:
+            return error
+
+        item_id, error = require_positive_int("item_id", data["item_id"])
+        if error:
+            return error        
         
-        user = User.query.get(data["user_id"])
+        rating_value, error = parse_optional_rating(data.get("rating"))
+        if error:
+            return error
+        
+        user = User.query.get(user_id)
         if not user:
             return {"errors": ["User does not exist"]}, 400
         
-        item = Item.query.get(data["item_id"])
+        item = Item.query.get(item_id)
         if not item:
             return {"errors": ["Item does not exist"]}, 400
         
@@ -380,6 +384,8 @@ def create_app():
 
         db.session.add(review)
         db.session.commit()
+        if error:
+            return error
 
         return review_to_dict(review), 201
     
