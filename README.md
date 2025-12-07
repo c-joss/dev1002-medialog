@@ -344,22 +344,26 @@ $env:FLASK_APP="app.py"
 $env:FLASK_ENV="development"
 ```
 
-### 7. Apply Database Migrations
+### 7. Create Database Tables
 
-This creates all tables defined in `models.py:`
+This creates all tables defined in `models.py` using SQLAlchemy directly:
 
 ```bash
-flask db upgrade
+python init_db.py
 ```
 
-This uses Flask-Migrate + Alembic to generate the schema.
+or on Windows PowerShell:
+
+```powershell
+python .\init_db.py
+```
 
 ### 8. Seed Initial Test Data
 
 This inserts categories, items, tags, creators, and reviews so you can immediately test routes.
 
 ```bash
-python -m server.seed
+python seed.py
 ```
 
 or on Windows:

@@ -1,12 +1,12 @@
 import os
 
-from .config import Config
+from config import Config
 from flask import Flask, jsonify
 from flask_migrate import Migrate
 from flask_cors import CORS
 from dotenv import load_dotenv
 from flask import request, jsonify
-from .models import db, User, Category, Item, Tag, Creator, Review
+from models import db, User, Category, Item, Tag, Creator, Review
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import BadRequest
 

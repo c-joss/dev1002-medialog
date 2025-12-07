@@ -1,5 +1,5 @@
-from .app import app
-from .models import (
+from app import app
+from models import (
     db,
     User,
     Category,
@@ -8,7 +8,6 @@ from .models import (
     Creator,
     Review,
 )
-
 
 def run_seed():
     with app.app_context():
