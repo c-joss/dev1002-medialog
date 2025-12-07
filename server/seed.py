@@ -1,5 +1,5 @@
-from app import app
-from models import (
+from .app import app
+from .models import (
     db,
     User,
     Category,
