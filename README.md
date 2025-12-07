@@ -330,7 +330,7 @@ Create a `.env` file in the project root:
 
 ```ini
 DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/medialog
-FLASK_APP=app.py
+FLASK_APP=server.app
 FLASK_ENV=development
 ```
 
@@ -340,7 +340,7 @@ On Windows PowerShell, you may prefer:
 
 ```powershell
 $env:DATABASE_URL="postgresql://postgres:yourpassword@localhost:5432/medialog"
-$env:FLASK_APP="app.py"
+$env:FLASK_APP="server.app"
 $env:FLASK_ENV="development"
 ```
 
@@ -363,7 +363,7 @@ python .\init_db.py
 This inserts categories, items, tags, creators, and reviews so you can immediately test routes.
 
 ```bash
-python seed.py
+python -m server.seed
 ```
 
 or on Windows:
