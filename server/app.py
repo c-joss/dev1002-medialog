@@ -12,6 +12,10 @@ from werkzeug.exceptions import BadRequest
 
 load_dotenv()
 
+# Helpers for handling requests
+# -----------------------------
+
+# Reads request JSON safely and returns helpful errors
 def get_json_or_error():
     try:
         data = request.get_json() or {}
@@ -23,7 +27,7 @@ def get_json_or_error():
 
     return data, None
 
-
+# Checks required fields are present (e.g. username, title)
 def require_fields(data, required_fields):
     missing = []
     for field in required_fields:
@@ -46,6 +50,7 @@ def require_fields(data, required_fields):
 
     return None
 
+# Commits changes to the database and handles unexpected DB errors
 def commit_session():
     try:
         db.session.commit()
@@ -55,6 +60,7 @@ def commit_session():
 
     return None
 
+# Validates IDs are positive integers
 def require_positive_int(name, raw_value):
     try:
         value = int(raw_value)
@@ -66,7 +72,7 @@ def require_positive_int(name, raw_value):
 
     return value, None
 
-
+# Validates optional rating is between 1–5
 def parse_optional_rating(raw_rating):
     if raw_rating is None:
         return None, None
@@ -81,6 +87,10 @@ def parse_optional_rating(raw_rating):
 
     return rating_value, None
 
+# Converters to shape response JSON
+# -----------------------------
+
+# Turns a Review into a simple dictionary sent back to the client
 def review_to_dict(review):
     return {
         "id": review.id,
@@ -119,11 +129,14 @@ def create_app():
     Migrate(app, db)
     CORS(app)
 
+    # Health check route
+    # -----------------------------
     @app.route("/")
     def index():
         return jsonify({"message": "Medialog API is running"}), 200
     
-    
+    # User Routes (create, list, get user, basic login)
+    # ----------------------------------------------------    
     @app.post("/users")
     def create_user():
         data, error = get_json_or_error()
@@ -206,9 +219,9 @@ def create_app():
                 "email": user.email,
             },
         }, 200
-
     
-    
+    # Item Routes (full CRUD on the main entity)
+    # ----------------------------------------------------    
     @app.post("/items")
     def create_item():
 
@@ -324,6 +337,7 @@ def create_app():
         if not item:
             return {"errors": [f"Item with id {item_id} not found"]}, 404
         
+        # Remove related reviews + links to tags/creators before deleting the item        
         for review in list(item.reviews):
             db.session.delete(review)
 
@@ -337,7 +351,8 @@ def create_app():
 
         return {"message": f"Item {item_id} deleted successfully"}, 200
     
-    
+    # Review Routes (create, list, list by item)
+    # ----------------------------------------------------    
     @app.post("/reviews")
     def create_review():
 
@@ -402,7 +417,8 @@ def create_app():
         reviews = Review.query.filter_by(item_id=item_id).all()
         return jsonify([review_to_dict(r) for r in reviews]), 200
     
-    
+    # Tag Routes (list, create, assign to item)
+    # ----------------------------------------------------    
     @app.get("/tags")
     def list_tags():
 
@@ -470,7 +486,8 @@ def create_app():
 
         return item_to_dict(item), 200
     
-    
+    # Creator Routes (list, create, assign to item)
+    # ----------------------------------------------------    
     @app.get("/creators")
     def list_creators():
 
@@ -539,6 +556,8 @@ def create_app():
 
         return item_to_dict(item), 200
     
+    # Simple JSON error responses
+    # -----------------------------   
     @app.errorhandler(404)
     def handle_not_found(error):
         return {"errors": ["Endpoint not found"]}, 404

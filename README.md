@@ -242,8 +242,8 @@ python seed.py
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/medialog-api.git
-cd medialog-api
+git clone git@github.com:c-joss/dev1002-medialog.git
+cd dev1002-medialog
 ```
 
 ### 2. Create a Virtual Environment
