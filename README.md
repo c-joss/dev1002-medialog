@@ -67,23 +67,20 @@ A full ERD is included in:
 
 ![ERD Diagram](docs/images/ERD.jpg)
 
-The database was normalised from UNF to 4NF using the standard steps (UNF→1NF→2NF→3NF→BCNF→4NF) to remove repeating groups, eliminate partial/transitive dependencies, and separate multi-valued sets into join tables.
+The database was normalised from UNF to 3NF to remove repeating groups, eliminate partial and transitive dependencies, and then multi-valued attributes were moved into their own junction tables to avoid duplication and follow Fourth Normal Form (4NF) design principles.
 
-I normalised the database step-by-step. First, I removed repeating groups by splitting multi-valued fields like tags and creators into separate rows so each value was stored on its own (UNF → 1NF). Then, I created separate tables for each main entity (`User`, `Category`, `Item`, `Tag`, `Creator`, `Review`) so that every column depended on the full key of that table instead of mixing different data together (1NF → 2NF).
+I normalised the database step-by-step. First, I removed repeating groups by splitting multi-valued fields like tags and creators into separate rows so each value was stored on its own (UNF → 1NF). Then, I created separate tables for each main entity (`User`, `Category`, `Item`, `Tag`, `Creator`, `Review`) so that every column depended on the full key of that table instead of mixing different kinds of data together (1NF → 2NF).
 
-Next, I cleaned up transitive dependencies by moving shared information, such as category names and user details, into their own tables and linking them with foreign keys (2NF → 3NF). I also updated how reviews are stored so that the combination of a user and an item acts as the unique pair for a review, which matches Boyce-Codd Normal Form (3NF → BCNF). Finally, I handled the two separate many-to-many relationships (items to tags and items to creators) using their own junction tables with composite constraints to avoid duplicated relationships (BCNF → 4NF).
+Next, I cleaned up transitive dependencies by moving shared information, such as category names and user details, into their own tables and linking them with foreign keys (2NF → 3NF). Finally, I handled the two independent many-to-many relationships (items to tags and items to creators) using their own junction tables with constraints to avoid duplicated relationships. This removes multi-valued dependencies and follows the design principles of Fourth Normal Form (4NF) in a practical way.
 
 ### Normalisation Summary
 
-| Normal Form Step | Key Action                                                                   | Why It Matters                                                                                    |
-| ---------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| UNF → 1NF        | Split repeating tag/creator lists into separate atomic rows                  | Ensures each cell holds a single value (atomic attributes).                                       |
-| 1NF → 2NF        | Separated data into User, Category, Tag, Creator, Item, Review tables        | Eliminates partial dependencies; each non-key depends on the whole key.                           |
-| 2NF → 3NF        | Removed transitive dependencies via dedicated parent tables (User, Category) | Confirms all non-key attributes depend only on the primary key.                                   |
-| 3NF → BCNF       | Modelled reviews as Review(user_id, item_id, …) with a proper determinant    | Every determinant is a candidate key, resolving user–item dependency issues.                      |
-| BCNF → 4NF       | Added `item_tags` and `item_creators` for independent multi-valued sets      | Removes non-trivial multivalued dependencies; prevents redundancy for tags and creators per item. |
-
-In my project, I used `review_id` as the main key for the reviews table, but a review still really belongs to one user and one item together, which is the idea behind BCNF.
+| Normalisation Step | Key Action                                                                   | Why It Matters                                                                                     |
+| ------------------ | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| UNF → 1NF          | Split repeating tag/creator lists into separate atomic rows                  | Ensures each cell holds a single value (atomic attributes).                                        |
+| 1NF → 2NF          | Separated data into User, Category, Tag, Creator, Item, and Review tables    | Eliminates partial dependencies; each non-key depends on the whole key of its table.               |
+| 2NF → 3NF          | Removed transitive dependencies via dedicated parent tables (User, Category) | Confirms all non-key attributes depend only on the primary key and not on other non-key fields.    |
+| 3NF → 4NF (design) | Used `item_tags` and `item_creators` junction tables for multi-valued sets   | Resolves multi-valued dependencies and avoids repeating tags/creators per item (4NF-style design). |
 
 ---
 
@@ -362,7 +359,7 @@ This uses Flask-Migrate + Alembic to generate the schema.
 This inserts categories, items, tags, creators, and reviews so you can immediately test routes.
 
 ```bash
-python seed.py
+python -m server.seed
 ```
 
 or on Windows:
