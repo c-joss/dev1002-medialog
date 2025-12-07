@@ -4,6 +4,14 @@ MediaLog is a small REST API I built using Flask and PostgreSQL so I could learn
 
 ---
 
+## Project Repository
+
+The full source code for this project is available here:
+
+**GitHub:** https://github.com/c-joss/dev1002-medialog
+
+---
+
 ## Live Deployment
 
 Production URL:
@@ -81,6 +89,32 @@ Next, I cleaned up transitive dependencies by moving shared information, such as
 | 1NF → 2NF          | Separated data into User, Category, Tag, Creator, Item, and Review tables    | Eliminates partial dependencies; each non-key depends on the whole key of its table.               |
 | 2NF → 3NF          | Removed transitive dependencies via dedicated parent tables (User, Category) | Confirms all non-key attributes depend only on the primary key and not on other non-key fields.    |
 | 3NF → 4NF (design) | Used `item_tags` and `item_creators` junction tables for multi-valued sets   | Resolves multi-valued dependencies and avoids repeating tags/creators per item (4NF-style design). |
+
+---
+
+## Project Structure
+
+```text
+dev1002-medialog/
+├─ docs/
+│  ├─ images/                   # ERD screenshot
+│  ├─ insomnia/                 # API test collections
+│  ├─ feedbacklog.md            # Peer feedback + responses
+│  ├─ Medialog Normalisation.xlsx
+│  └─ medialogERD.pdf
+│
+├─ server/                      # Flask backend
+│  ├─ __init__.py               # package marker
+│  ├─ app.py                    # Flask app, routes, helpers
+│  ├─ config.py                 # database + env config
+│  ├─ models.py                 # SQLAlchemy models
+│  └─ seed.py                   # seed data script
+│
+├─ init_db.py                   # DB table creation helper
+├─ requirements.txt             # dependencies
+├─ README.md                    # documentation
+└─ LICENSE                      # MIT license
+```
 
 ---
 
